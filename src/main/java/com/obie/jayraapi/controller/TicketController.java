@@ -1,16 +1,29 @@
 package com.obie.jayraapi.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/ticket")
 public class TicketController {
 
-    @GetMapping("/greet/{name}")
-    public String greetMe(@PathVariable String name, @RequestParam Map<String, String> param) {
+    private Ticket ticket;
 
-        return "Hello " + name + " " + param.get("lastname") + "!";
+    @GetMapping("/{ticketNum}")
+    public Ticket getTicket(@PathVariable int ticketNum) {
+        if (ticket == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        if (ticket.getTicketNum() == ticketNum) {
+            return ticket;
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PostMapping("/{ticketNum}/{title}")
+    public void createTicket(@PathVariable int ticketNum, @PathVariable String title) {
+        ticket = new Ticket(ticketNum, title);
     }
 }
