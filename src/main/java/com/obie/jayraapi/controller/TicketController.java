@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/ticket")
+@RequestMapping("/tickets")
 public class TicketController {
 
     private List<Ticket> ticketlist = new ArrayList<>();
@@ -71,21 +71,4 @@ public class TicketController {
         return response;
     }
 
-    @GetMapping("/getAllTickets")
-    public List<Ticket> getAllTickets() {
-        if ((ticketlist == null) || ticketlist.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
-        return ticketlist;
-    }
-
-    @PostMapping("/clearTicketList")
-    public void clearTicketList() {
-        ticketlist.clear();
-    }
-
-    @GetMapping("/getTicketListNum")
-    public int getTicketListNum() {
-        return ticketlist.size();
-    }
 }
