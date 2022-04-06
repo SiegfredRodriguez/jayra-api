@@ -1,19 +1,29 @@
 package com.obie.jayraapi.controller;
 
+import com.obie.jayraapi.datasource.TicketRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/tickets")
 public class TicketController {
 
     private List<Ticket> ticketlist = new ArrayList<>();
+    private TicketRepository ticketRepository;
+
+    @Autowired
+    public TicketController(TicketRepository ticketRepository) {
+        this.ticketRepository = ticketRepository;
+    }
+
+    @GetMapping("/dummy")
+    public String dummyKo() {
+        return ticketRepository.findById(UUID.fromString("f3c5c58c-bd25-4a8e-be06-30258f16822d")).get().getTitle();
+    }
 
     @GetMapping("/{ticketNum}")
     public Ticket getTicket(@PathVariable int ticketNum) {
