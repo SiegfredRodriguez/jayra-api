@@ -2,6 +2,7 @@ package com.obie.jayraapi.service;
 
 import com.obie.jayraapi.datasource.Ticket;
 import com.obie.jayraapi.datasource.TicketRepository;
+import com.obie.jayraapi.service.exception.TicketNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +19,13 @@ public class TicketService {
         this.ticketRepository = ticketRepository;
     }
 
-    public Optional<Ticket> findTicket(UUID id) {
+    public Optional<Ticket> helperFindTicket(UUID id) {
         return ticketRepository.findById(id);
+    }
+
+    public Ticket findTicket(UUID id) {
+        return ticketRepository.findById(id)
+                .orElseThrow(() -> new TicketNotFoundException(id));
     }
 
     public Ticket createTicket(Ticket ticket) {
@@ -28,7 +34,7 @@ public class TicketService {
     }
 
     public Ticket updateTicket(Ticket ticket) {
-        var result = findTicket(ticket.getId());
+        var result = helperFindTicket(ticket.getId());
 
         if (result.isPresent()) {
             var t = result.get();
