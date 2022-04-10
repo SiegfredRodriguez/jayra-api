@@ -1,12 +1,16 @@
 package com.obie.jayraapi.controller;
 
+import com.obie.jayraapi.datasource.Ticket;
 import com.obie.jayraapi.datasource.TicketRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/tickets")
@@ -26,59 +30,50 @@ public class TicketController {
     }
 
     @GetMapping("/{ticketNum}")
-    public Ticket getTicket(@PathVariable int ticketNum) {
-        if ((ticketlist == null) || ticketlist.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+    public ResponseEntity<Ticket> getTicket(@PathVariable UUID ticketNum) {
+        Optional<com.obie.jayraapi.datasource.Ticket> data = ticketRepository.findById(ticketNum);
+        if (data.isPresent()) {
+            return new ResponseEntity<>(data.get(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        Ticket ticketRet = null;
-        for (Ticket ticket : ticketlist) {
-            if (ticket.getTicketNum() == ticketNum) {
-                ticketRet = ticket;
-            }
-        }
-        if (ticketRet == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
-        return ticketRet;
+
     }
 
-    @PostMapping("/createTicket/{ticketNum}/{title}")
-    public void createTicket(@PathVariable int ticketNum, @PathVariable String title) {
-        Ticket ticket = new Ticket(ticketNum, title);
-        ticketlist.add(ticket);
+    @PostMapping("/createTicket/{title}")
+    public ResponseEntity<Ticket> createTicket(@PathVariable String title) {
+        UUID uuid = UUID.randomUUID();
+        Ticket ticket = new Ticket();
+        ticket.setId(uuid);
+        ticket.setTitle(title);
+        try {
+            Ticket ticketRet = ticketRepository.save(ticket);
+            return new ResponseEntity<>(ticket, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @PatchMapping("/{ticketNum}/{title}")
-    public void updateTicket(@PathVariable int ticketNum, @PathVariable String title) {
-        if ((ticketlist == null) || ticketlist.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
-
-        for (Ticket ticket : ticketlist) {
-            if (ticket.getTicketNum() == ticketNum) {
-                ticket.setTitle(title);
-            }
+    @PutMapping("/{ticketNum}/{title}")
+    public ResponseEntity<Ticket> updateTicket(@PathVariable UUID ticketNum, @PathVariable String title) {
+        Optional<Ticket> data = ticketRepository.findById(ticketNum);
+        if (data.isPresent()) {
+            Ticket ticket = data.get();
+            ticket.setTitle(title);
+            return new ResponseEntity<>(ticketRepository.save(ticket), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
     @DeleteMapping("/{ticketNum}")
-    public Map<String, Boolean> deleteTicket(@PathVariable(value = "ticketNum") int ticketNum) {
-        if ((ticketlist == null) || ticketlist.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+    public ResponseEntity<Ticket> deleteTicket(@PathVariable(value = "ticketNum") UUID ticketNum) {
+        try {
+            ticketRepository.deleteById(ticketNum);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        Map<String, Boolean> response = new HashMap<>();
-
-        for (int i = 0; i < ticketlist.size(); i++) {
-            Ticket ticket = ticketlist.get(i);
-            if (ticket.getTicketNum() == ticketNum) {
-                ticketlist.remove(i);
-                response.put("deleted", Boolean.TRUE);
-            }
-        }
-        if (response.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
-        return response;
     }
 
 }
