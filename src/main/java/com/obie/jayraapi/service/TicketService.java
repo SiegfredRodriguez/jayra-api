@@ -19,39 +19,25 @@ public class TicketService {
         this.ticketRepository = ticketRepository;
     }
 
-    public Optional<Ticket> helperFindTicket(UUID id) {
-        return ticketRepository.findById(id);
-    }
-
     public Ticket findTicket(UUID id) {
         return ticketRepository.findById(id)
                 .orElseThrow(() -> new TicketNotFoundException(id));
     }
 
     public Ticket createTicket(Ticket ticket) {
-        ticket.setId(UUID.randomUUID());
-        return ticketRepository.save(ticket);
+        Ticket localCopy = new Ticket(UUID.randomUUID(), ticket.getTitle());
+        return ticketRepository.save(localCopy);
     }
 
     public Ticket updateTicket(Ticket ticket) {
-        var result = helperFindTicket(ticket.getId());
-
-        if (result.isPresent()) {
-            var t = result.get();
-            t.setTitle(ticket.getTitle());
-            return ticketRepository.save(t);
-        } else {
-            return null;
-        }
+        Ticket localCopy = findTicket(ticket.getId());
+        localCopy.setTitle(ticket.getTitle());
+        return ticketRepository.save(localCopy);
     }
 
     public boolean deleteTicket(UUID id) {
-        try {
-            ticketRepository.deleteById(id);
-        } catch (Exception e) {
-            return false;
-        }
-
+        Ticket localCopy = findTicket(id);
+        ticketRepository.deleteById(localCopy.getId());
         return true;
     }
 
