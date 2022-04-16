@@ -29,10 +29,10 @@ public class TicketController {
         return ticketService.findTicket(ticketNum);
     }
 
-    @PostMapping("/createTicket/{title}")
-    public ResponseEntity<Ticket> createTicket(@PathVariable String title) {
+    @PostMapping
+    public ResponseEntity<Ticket> createTicket(@RequestBody TicketDTO ticketDTO) {
         Ticket ticket = new Ticket();
-        ticket.setTitle(title);
+        ticket.setTitle(ticketDTO.getTitle());
 
         try {
             Ticket ticketRet = ticketService.createTicket(ticket);
